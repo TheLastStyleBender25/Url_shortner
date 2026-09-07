@@ -109,4 +109,8 @@ jobs:
 
       - name: Run tests
         working-directory: services/api-gateway
-        run: pytest -v
+        env:
+          AUTH_SERVICE_URL: "http://auth-service:8000"
+          URL_SERVICE_URL: "http://url-service:8000"
+        run: |
+          pytest -v
