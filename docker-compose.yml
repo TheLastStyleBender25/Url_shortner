@@ -1,0 +1,97 @@
+services:
+  auth-service:
+    build:
+      context: ./services/auth-service
+    container_name: auth-service-URL
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./services/auth-service/.env
+    depends_on:
+      - auth-postgres-URL
+      - redis
+
+  url-service:
+    build:
+      context: ./services/url-service
+    container_name: url-service-URL
+    ports:
+      - "8005:8000"
+    env_file:
+      - ./services/url-service/.env
+    depends_on:
+      - url-postgres-URL
+      - redis
+
+  api-gateway:
+    build:
+      context: ./services/api-gateway
+    container_name: api-gateway-URL
+    ports:
+      - "8006:8000"
+    env_file:
+      - ./services/api-gateway/.env
+    depends_on:
+      - auth-service
+      - url-service
+
+  auth-worker:
+    build:
+      context: ./services/auth-service
+    container_name: auth-worker-URL
+    restart: unless-stopped
+    env_file:
+      - ./services/auth-service/.env
+    command: celery -A app.core.celery.celery_app worker --loglevel=info -Q auth_queue
+    depends_on:
+      - redis
+
+  url-worker:
+    build:
+      context: ./services/url-service
+    container_name: url-worker-URL
+    restart: unless-stopped
+    env_file:
+      - ./services/url-service/.env
+    command: celery -A app.core.celery.celery_app worker --loglevel=info -Q url_queue
+    depends_on:
+      - redis
+
+  auth-postgres-URL:
+    image: postgres:17
+    container_name: auth-postgres-URL
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: auth_db_URL
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - auth_postgres_URL_data:/var/lib/postgresql/data
+
+  url-postgres-URL:
+    image: postgres:17
+    container_name: url-postgres-URL
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: url_db_URL
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5435:5432"
+    volumes:
+      - url_postgres_URL_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    container_name: redis-URL
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+
+volumes:
+  auth_postgres_URL_data:
+  url_postgres_URL_data:
+
+
