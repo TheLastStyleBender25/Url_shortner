@@ -73,7 +73,18 @@ jobs:
 
       - name: Run tests
         working-directory: services/url-service
-        run: pytest -v
+        env:
+          DB_PORT: "5432"
+          DB_USER: "test"
+          DB_NAME: "test"
+          DB_PASSWORD: "test"
+          DB_HOST: "localhost"
+          JWT_SECRET_KEY: "test-secret-key"
+          JWT_ALGORITHM: "HS256"
+          REDIS_HOST: "localhost"
+          REDIS_PORT: "6379"
+        run: |
+          pytest -v
 
 
   api-gateway-tests:
