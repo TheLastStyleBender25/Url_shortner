@@ -114,3 +114,30 @@ jobs:
           URL_SERVICE_URL: "http://url-service-URL:8000"
         run: |
           pytest -v
+
+
+  docker-build:
+    name: Docker Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build Auth Service
+        run: |
+          docker build \
+            -t auth-service \
+            ./services/auth-service
+
+      - name: Build URL Service
+        run: |
+          docker build \
+            -t url-service \
+            ./services/url-service
+
+      - name: Build API Gateway
+        run: |
+          docker build \
+            -t api-gateway \
+            ./services/api-gateway
